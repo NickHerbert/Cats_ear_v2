@@ -7,25 +7,32 @@
 
 #include "Arduino.h"
 #include <Servo.h>
-#define OPENING 1
-#define OPENED 2
+#define CLOSED 0
+#define OPENED 1
+#define OPENING 2
 #define CLOSING 3
-#define CLOSED 4
+
 class Sweeper{
   public:
     Sweeper();
-    Sweeper(int interval, int oAngle, int cAngle);
-    void attachServo(int pin);
-    void detachServo();
-    void update();
+    Sweeper(int servo_pin,int interval, int oAngle, int cAngle);
+    void activate_servo();
+    void deactivate_servo();
+    void set_state(int state);
+    void set_speed (int speed);
+    void set_close_angle (int angle);
+    void set_open_angle (int angle);
+    void update(unsigned long currentMillis);
   private:
-    Servo servo;               // the servo
-    int pos;                   // current servo position
-    int stepSize;              // increment to move for each interval
-    int updateInterval;        // interval between updates
-    int openedAngle;           // angle at which the servo is considered open
-    int closedAngle;           // angle at which the servo is considered closed
-    unsigned long lastUpdate;  // last update of position
-    boolean sweeperState;      // false is closed true is open
+    Servo servo;                  // the servo
+    int servo_pin;
+    int sweeperState;             // 0 closed, 1 opened, 2 opening, 3 closing
+    int pos;                      // current servo position
+    int stepSize;                 // increment to move for each interval
+    unsigned long updateInterval; // interval between updates
+    int openedAngle;              // angle at which the servo is considered open
+    int closedAngle;              // angle at which the servo is considered closed
+    unsigned long lastUpdate;     // last update of position
+
 };
 #endif

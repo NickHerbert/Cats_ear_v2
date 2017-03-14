@@ -18,6 +18,7 @@ Nicholas Herbert
 #include <Feeder.h>
 #include <SoftwareSerial.h>
 #include <Wire.h>
+
 #include <LiquidCrystal_I2C.h>
 
 //required for ID3LA
@@ -73,15 +74,7 @@ void printFeedStat(int opens,int myCat);
 
 
 
-
-// Interrupt is called once a millisecond,
-SIGNAL(TIMER0_COMPA_vect)
-{
-  unsigned long currentMillis = millis();
-
-}
-
-Feeder feeder1(10,105,0);
+Feeder feeder1(13,100,500,3,10,105,0);
 
 
 void setup(){
@@ -97,6 +90,16 @@ void setup(){
 
 
 }
+
+// Interrupt is called once a millisecond,
+SIGNAL(TIMER0_COMPA_vect)
+{
+  unsigned long currentMillis = millis();
+  feeder1.update(currentMillis);
+
+}
+
+
 
 
 void loop(){

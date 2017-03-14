@@ -9,48 +9,60 @@
 Sweeper::Sweeper(){
 
 }
-Sweeper::Sweeper(int interval, int oAngle, int cAngle){
+Sweeper::Sweeper(int servo_pin, int interval, int oAngle, int cAngle){
+  servo_pin = servo_pin;
   updateInterval = interval;
   openedAngle = oAngle;
   closedAngle = cAngle;
   stepSize = 1;
-  sweeperState = false;
+  sweeperState = CLOSED;
 }
-void Sweeper::attachServo(int pin){
-  servo.attach(pin);
+void Sweeper::activate_servo(){
+  servo.attach(servo_pin);
 }
-void Sweeper::detachServo(){
+void Sweeper::deactivate_servo(){
   servo.detach();
 }
-void Sweeper::update(){
-  if((millis() - lastUpdate) > updateInterval)  // time to update
+void Sweeper::set_state(int state){
+  sweeperState = state;
+}
+void Sweeper::set_speed(int speed){
+  stepSize = speed;
+}
+void Sweeper::set_close_angle(int angle){
+  closedAngle = angle;
+}
+void Sweeper::set_open_angle(int angle){
+  openedAngle = angle;
+}
+void Sweeper::update(unsigned long currentMillis){
+  if((currentMillis - lastUpdate) > updateInterval)  // time to update
   {
     lastUpdate = millis();
    //get the state of the servo
    switch(sweeperState){
       case OPENING:
+        pos += stepSize;
+        servo.write(pos);
+        if((pos >= openedAngle)){
+          sweeperState = OPENED;
+        }
         break;
       case OPENED:
+        //we can have some logic happening when the door is open
         break;
       case CLOSING:
+        pos -= stepSize;
+        servo.write(pos);
+        if((pos <= closedAngle)){
+          sweeperState = CLOSED;
+        }
         break;
       case CLOSED:
+        //we can have some logic happening when the door is closed
         break;
       default:
         break;
    }
-
-   if (sweeperState == false){
-     pos += stepSize;//if the door is closed then we increment the position until its fully open
-   }else{
-     pos -= stepSize;//if the door is open then we decrement the position until its fully closed
-   }
-   servo.write(pos);
-   if((pos >= openedAngle)){//door is fully open
-      sweeperState = true;
-    }else if((pos <= closedAngle)){//door is fully closed
-      sweeperState = false;
-    }else { // door is stuck somewhere
-    }
   }
 }
