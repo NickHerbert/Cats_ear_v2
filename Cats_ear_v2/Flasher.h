@@ -13,6 +13,7 @@ class Flasher{
     Flasher(int pin, long on, long off);
     void set_on_time(long on);
     void set_off_time(long off);
+    void set_state(bool is_on);
     void update(unsigned long currentMillis);
   private:
   	// Class Member Variables

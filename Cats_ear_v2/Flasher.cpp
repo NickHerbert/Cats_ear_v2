@@ -23,6 +23,9 @@ void Flasher::set_on_time(long on){
 void Flasher::set_off_time(long off){
   off_time = off;
 }
+void Flasher::set_state(bool is_on){
+  ledState = is_on;
+}
 void Flasher::update(unsigned long currentMillis){
   if((ledState == HIGH) && (currentMillis - lastUpdate >= on_time))
   {

@@ -5,7 +5,7 @@
 #include "Arduino.h"
 #include "Feeder.h"
 
-Feeder::Feeder(int led_pin, long on, long off, int servo_pin, int interval, int oAngle, int cAngle):servo(servo_pin,interval,oAngle,cAngle),led(led_pin,on,off){
+Feeder::Feeder(int led_pin, long on, long off, int servo_pin, int interval, int oAngle, int cAngle):servo(servo_pin,interval,oAngle,cAngle),led(led_pin,on,off),light(),vib(){
   updateInterval = interval;        // interval between updates
   lastUpdate = 0;  // last update of position
 }
@@ -18,15 +18,15 @@ void Feeder::servo_close(){
   servo.set_state(CLOSING);
 }
 void Feeder::set_indicator_light(boolean is_on){
-
+  led.set_state(is_on);
 }
-float Feeder::get_vib_sensor(){
+float Feeder::get_vib_sensor_value(){
 
 }
 void Feeder::set_vib_sensor_thresh(int threshold){
 
 }
-float Feeder::get_light_sensor(){
+float Feeder::get_light_sensor_value(){
 
 }
 void Feeder::set_light_sensor_thresh(int threshold){
@@ -37,5 +37,8 @@ void Feeder::update(unsigned long currentMillis){
 
     servo.update(currentMillis);
     led.update(currentMillis);
+    light.update(currentMillis);
+    // vib.update(currentMillis);
+
   }
 }

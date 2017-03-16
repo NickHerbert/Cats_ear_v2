@@ -16,14 +16,10 @@ DPDT Relay
 Nicholas Herbert
 */
 #include <Feeder.h>
-#include <SoftwareSerial.h>
+#include <Rfid.h>
 #include <Wire.h>
 
 #include <LiquidCrystal_I2C.h>
-
-//required for ID3LA
-SoftwareSerial rfid = SoftwareSerial(5, 6);
-String rfid_msg;
 
 //required for the pcf8574n
 LiquidCrystal_I2C lcd(0x20,16,2);  // set the LCD address to 0x20 for a 16 chars and 2 line display
@@ -58,7 +54,7 @@ struct stat Kaylee;
 struct stat Minna;
 
 class Feeder;
-
+class Rfid;
 
 
 
@@ -75,7 +71,8 @@ void printFeedStat(int opens,int myCat);
 
 
 Feeder feeder1(13,100,500,3,10,105,0);
-
+int tx_rx[2] = {8,9};
+Rfid rfid(tx_rx, "start up", 0);
 
 void setup(){
 
@@ -87,15 +84,31 @@ void setup(){
   OCR0A = 0xAF;
   TIMSK0 |= _BV(OCIE0A);
 
-
+  lcd.print("Hello, world!");
 
 }
 
 // Interrupt is called once a millisecond,
-SIGNAL(TIMER0_COMPA_vect)
-{
+SIGNAL(TIMER0_COMPA_vect){
   unsigned long currentMillis = millis();
+  
   feeder1.update(currentMillis);
+
+  //read inputs from 165
+  //inputs are from
+  //feeder 1 and 2
+  //  light sensor
+  //  Vibration sensor
+  // 4 extra
+
+  //write outputs from 595
+  //outputs to
+  //mulitcolorled
+  //led on feeder 1 and 2
+  //controller light 1 and 2
+  //
+
+  rfid.update(currentMillis); //rfid will read here
 
 }
 
