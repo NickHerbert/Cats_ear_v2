@@ -7,14 +7,13 @@
 Flasher::Flasher(){
 
 }
-Flasher::Flasher(int pin, long on, long off){
-  ledPin = pin;
-  pinMode(ledPin, OUTPUT);
-
+Flasher::Flasher(Bitmask8& o_bits, int pos, long on, long off){
+  output_bits = o_bits;
+  bit_pos = pos;
   set_on_time(on);
   set_off_time(off);
 
-  ledState = LOW;
+  output_bits.Set(bit_pos);
   lastUpdate = 0;
 }
 void Flasher::set_on_time(long on){
@@ -24,19 +23,17 @@ void Flasher::set_off_time(long off){
   off_time = off;
 }
 void Flasher::set_state(bool is_on){
-  ledState = is_on;
+  output_bits.SetOrClear(bit_pos,is_on);
 }
 void Flasher::update(unsigned long currentMillis){
-  if((ledState == HIGH) && (currentMillis - lastUpdate >= on_time))
+  if((output_bits.IsSet(bit_pos)) && (currentMillis - lastUpdate >= on_time))
   {
-    ledState = LOW;  // Turn it off
     lastUpdate = currentMillis;  // Remember the time
-    digitalWrite(ledPin, ledState);  // Update the actual LED
+    output_bits.Clear(bit_pos);
   }
-  else if ((ledState == LOW) && (currentMillis - lastUpdate >= off_time))
+  else if (!(output_bits.IsSet(bit_pos)) && (currentMillis - lastUpdate >= off_time))
   {
-    ledState = HIGH;  // turn it on
     lastUpdate = currentMillis;   // Remember the time
-    digitalWrite(ledPin, ledState);	  // Update the actual LED
+    output_bits.Set(bit_pos);
   }
 }

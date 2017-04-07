@@ -5,7 +5,7 @@
 #include "Arduino.h"
 #include "Light_sensor.h"
 
-Light_sensor::Light_sensor(){
+Light_sensor::Light_sensor(int interval){
   light_sensor_thresh = 5;
 }
 int Light_sensor::get_light_sensor_value(){

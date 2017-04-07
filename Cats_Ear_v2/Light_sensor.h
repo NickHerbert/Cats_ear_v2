@@ -8,7 +8,7 @@
 #include "Arduino.h"
 class Light_sensor{
   public:
-    Light_sensor();
+    Light_sensor(int interval);
     int get_light_sensor_value();
     void set_light_sensor_thresh(int threshold);
     void update(unsigned long currentMillis);

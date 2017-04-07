@@ -7,10 +7,11 @@
 #define Flasher_h
 
 #include "Arduino.h"
+#include "Bitmask.h"
 class Flasher{
   public:
     Flasher();
-    Flasher(int pin, long on, long off);
+    Flasher(Bitmask8& o_bits, int pos, long on, long off);
     void set_on_time(long on);
     void set_off_time(long off);
     void set_state(bool is_on);
@@ -18,12 +19,13 @@ class Flasher{
   private:
   	// Class Member Variables
   	// These are initialized at startup
-  	int ledPin;      // the number of the LED pin
   	long on_time;     // milliseconds of on-time
   	long off_time;    // milliseconds of off-time
 
   	// These maintain the current state
   	bool ledState;             		// ledState used to set the LED
+    Bitmask8& output_bits;
+    int bit_pos;                //this is the position of the bit which controlls the led
   	unsigned long lastUpdate;  	// will store last time LED was updated
 };
 #endif

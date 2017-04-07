@@ -5,7 +5,8 @@
 #include "Arduino.h"
 #include "Vib_sensor.h"
 
-Vib_sensor::Vib_sensor(){
+Vib_sensor::Vib_sensor(int interval){
+  updateInterval = interval;
   vib_sensor_thresh = 5;
 }
 int Vib_sensor::get_vib_sensor_value(){

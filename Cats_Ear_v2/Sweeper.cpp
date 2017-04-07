@@ -49,6 +49,7 @@ void Sweeper::update(unsigned long currentMillis){
         }
         break;
       case OPENED:
+        deactivate_servo();
         //we can have some logic happening when the door is open
         break;
       case CLOSING:
@@ -59,6 +60,7 @@ void Sweeper::update(unsigned long currentMillis){
         }
         break;
       case CLOSED:
+        deactivate_servo();
         //we can have some logic happening when the door is closed
         break;
       default:
