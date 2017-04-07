@@ -11,7 +11,7 @@
 class Flasher{
   public:
     Flasher();
-    Flasher(Bitmask8& o_bits, int pos, long on, long off);
+    Flasher( int pos, long on, long off);
     void set_on_time(long on);
     void set_off_time(long off);
     void set_state(bool is_on);
@@ -24,7 +24,6 @@ class Flasher{
 
   	// These maintain the current state
   	bool ledState;             		// ledState used to set the LED
-    Bitmask8& output_bits;
     int bit_pos;                //this is the position of the bit which controlls the led
   	unsigned long lastUpdate;  	// will store last time LED was updated
 };

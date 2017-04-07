@@ -54,7 +54,7 @@ const int relayTogglePin = 2;
 bool option_display_uptime = true;
 
 
-enum component_bits { FISH = 0,
+enum component_input_bits { FISH = 0,
                       CRABS = 1,
                       JELLYFISH = 2,
                       SHARKS = 3,
@@ -70,6 +70,16 @@ enum component_bits { FISH = 0,
                       BUTTON_START = 13,
                       BUTTON_RIGHT = 14,
                       BUTTON_SELECT = 15};
+
+enum component_output_bits { RED   = 8,
+                            GREEN = 7,
+                            BLUE  = 6,
+                            EXTRA = 5,
+                            LASER = 4,
+                            LED = 3,
+                            FEED2 = 2,
+                            FEED1 = 1};
+
 
 enum feline{kaylee,minna};
 
@@ -163,8 +173,8 @@ void write_feeder_state(Feeder feeder){
 
 
 
-Feeder feeder1(output_bits,2,100,500,3,10,105,0,1000);
-Feeder feeder2(output_bits,3,100,500,3,10,105,0,1000);
+Feeder feeder1(FEED1,100,500,3,10,105,0,1000);
+Feeder feeder2(FEED2,100,500,3,10,105,0,1000);
 int tx_rx[2] = {8,9};
 Rfid rfid(tx_rx, "start up", 0);
 
@@ -265,13 +275,49 @@ SIGNAL(TIMER0_COMPA_vect){
 //     feeder1.set_indicator_light(false);
 //     feeder2.servo_open();
 //   }
-//
-//   //led on feeder 1 and 2
-//   //controller light 1 and 2
-//   // servo open close
-//   write_feeder_state(feeder1,incoming_bytes_165);
-//   // write_feeder_state(feeder2,incoming_bytes_165);
-//
+
+if (io_bits.IsSet(VIB_2)){
+  output_bits.Set(LASER);
+}
+
+if (io_bits.IsSet(LASER_2)){
+  output_bits.Clear(LED);
+}
+else{
+  output_bits.Set(LED);
+}
+if(io_bits.IsSet(BUTTON_A)){
+  output_bits.Set(LASER);
+}
+if(io_bits.IsSet(BUTTON_B)){
+  output_bits.Clear(LASER);
+}
+if(io_bits.IsSet(BUTTON_LEFT)){
+  feeder1.set_indicator_light(output_bits);
+}
+else{
+  feeder1.clear_indicator_light(output_bits);
+}
+if(io_bits.IsSet(BUTTON_RIGHT)){
+  output_bits.Set(GREEN);
+}
+else{
+  output_bits.Clear(GREEN);
+}
+if(io_bits.IsSet(BUTTON_DOWN)){
+  output_bits.Set(BLUE);
+}
+else{
+  output_bits.Clear(BLUE);
+}
+
+if(io_bits.IsSet(BUTTON_UP)){
+  output_bits.Set(RED);
+}
+else{
+  output_bits.Clear(RED);
+}
+
 }
 //
 
@@ -291,6 +337,7 @@ void loop(){
       display_pin_values();
       io_bits_old.CopyAll(io_bits);
   }
+
 
 
 

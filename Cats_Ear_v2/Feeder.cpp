@@ -5,11 +5,12 @@
 #include "Arduino.h"
 #include "Feeder.h"
 
-Feeder::Feeder(Bitmask8& output_bits, int led_pos, long on, long off, int servo_pin, int interval, int oAngle, int cAngle, int duration):servo(servo_pin,interval,oAngle,cAngle),led(output_bits,led_pos,on,off),light(interval),vib(interval){
+Feeder::Feeder(int led_pos, long on, long off, int servo_pin, int interval, int oAngle, int cAngle, int duration):servo(servo_pin,interval,oAngle,cAngle),light(interval),vib(interval){
   updateInterval = interval;        // interval between updates
   servo_open_duration = duration;
   open_count = 0;
   lastUpdate = 0;  // last update of position
+  led_position = led_pos;
 }
 void Feeder::servo_open(){
   servo.activate_servo();
@@ -20,8 +21,11 @@ void Feeder::servo_close(){
   servo.activate_servo();
   servo.set_state(CLOSING);
 }
-void Feeder::set_indicator_light(boolean is_on){
-  led.set_state(is_on);
+void Feeder::set_indicator_light(Bitmask8 &out_bits){
+  out_bits.Set(led_position);
+}
+void Feeder::clear_indicator_light(Bitmask8 &out_bits){
+  out_bits.Clear(led_position);
 }
 int Feeder::get_vib_sensor_value(){
   vib.get_vib_sensor_value();
@@ -43,7 +47,6 @@ void Feeder::update(unsigned long currentMillis){
   if((currentMillis - lastUpdate) > updateInterval){  // time to update
 
     servo.update(currentMillis);
-    led.update(currentMillis);
     light.update(currentMillis);
     vib.update(currentMillis);
 

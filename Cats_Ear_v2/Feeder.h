@@ -14,10 +14,11 @@
 
 class Feeder{
   public:
-    Feeder(Bitmask8& output_bits, int led_pos, long on, long off, int servo_pin, int interval, int oAngle, int cAngle, int duration);
+    Feeder(int led_pos, long on, long off, int servo_pin, int interval, int oAngle, int cAngle, int duration);
     void servo_open();
     void servo_close();
-    void set_indicator_light(bool is_on);
+    void set_indicator_light(Bitmask8 &out_bits);
+    void clear_indicator_light(Bitmask8 &out_bits);
     int get_vib_sensor_value();
     void set_vib_sensor_thresh(int threshold);
     int get_light_sensor_value();
@@ -26,12 +27,11 @@ class Feeder{
     void update(unsigned long currentMillis);
   private:
     Sweeper servo;               // the servo
-    Flasher led;
     Light_sensor light;
     Vib_sensor vib;
 
+    int led_position;
     int servo_open_duration;
-
     int open_count;
     int updateInterval;        // interval between updates
     unsigned long lastUpdate;  // last update of position
