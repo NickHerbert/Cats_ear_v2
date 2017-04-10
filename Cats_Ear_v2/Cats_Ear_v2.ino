@@ -15,10 +15,12 @@ DPDT Relay
 
 Nicholas Herbert
 */
+#include "Arduino.h"
 #include <Feeder.h>
 #include <Rfid.h>
 #include <Wire.h>
 #include "Bitmask.h"
+#include <Servo.h>
 
 //required for the pcf8574n
 #include <hd44780.h>
@@ -26,6 +28,9 @@ Nicholas Herbert
 hd44780_I2Cexp lcd; // declare lcd object: auto locate & config exapander chip
 const int LCD_ROWS = 2;// LCD geometry
 const int LCD_COLS = 16;
+Servo myservo;
+Servo myservo1;
+unsigned long currentMillis = 0;
 
 //required for 74hc165n
 const int clock_pin_165       = 7;
@@ -48,20 +53,20 @@ const int clock_pin_595 = 11;
 const int data_pin_595  = 13;
 
 //required for Relay
-const int relayTogglePin = 2;
+const int relayTogglePin = 3;
 
 //catfeeder Options
 bool option_display_uptime = true;
 
 
-enum component_input_bits { FISH = 0,
-                      CRABS = 1,
-                      JELLYFISH = 2,
-                      SHARKS = 3,
-                      VIB_2 = 4,
-                      LASER_2 = 5,
-                      WHALES = 6,
-                      DOLPHINS = 7,
+enum component_input_bits { EXTRA_P0 = 0,
+                      EXTRA_P1 = 1,
+                      EXTRA_P2 = 2,
+                      EXTRA_P3 = 3,
+                      VIB_P4 = 4,
+                      LASER_P5 = 5,
+                      LASER_P6 = 6,
+                      VIB_P7 = 7,
                       BUTTON_LEFT = 8,
                       BUTTON_UP = 9,
                       BUTTON_DOWN = 10,
@@ -153,30 +158,12 @@ void display_pin_values()
     Serial.print("\r\n");
 }
 
+//(int led_pos, long on, long off, int servo_pin, int interval, int oAngle, int cAngle,int pmin, int pmax, int duration, int close_delay)
+Feeder feeder1(FEED1,4,10,100,-5,544,2600,5000,1,LASER_P5);
+Feeder feeder2(FEED2,2,10,100,-25,544,2800,5000,1,LASER_P6);
 
-void write_feeder_state(Feeder feeder){
-
-  //00101001
-  // the_states & 0b01000000 ;
-  //
-  //set enums for the bit positions
-  //enum MyFlags { PONIES = 1, DOLPHINS = 2 };
-  //((incoming_bytes_165 >> i) & 1)
-  //(incomming_bytes_165 &(1<<i))
-
-  // display byte values is only needed for debugging.
-  display_pin_values();
-
-
-}
-
-
-
-
-Feeder feeder1(FEED1,100,500,3,10,105,0,1000);
-Feeder feeder2(FEED2,100,500,3,10,105,0,1000);
-int tx_rx[2] = {8,9};
-Rfid rfid(tx_rx, "start up", 0);
+// int tx_rx[2] = {6,5};
+// Rfid rfid(tx_rx, "start up", 0);
 
 void setup(){
   Serial.begin(9600);
@@ -213,8 +200,13 @@ void setup(){
   /* Read in and display the pin states at startup.
   */
   read_165_shift_regs();
-  display_pin_values();
+  // display_pin_values();
   io_bits_old.CopyAll(io_bits);
+
+  pinMode(relayTogglePin,OUTPUT);
+
+  feeder1.init_servo();
+  feeder2.init_servo();
 
   //if the 13th bit is HIGH then there is no controller attached recaculate data width
   //EG send 00001000 recieve 0000100000001000 = no controller attached
@@ -236,87 +228,53 @@ void setup(){
 SIGNAL(TIMER0_COMPA_vect){
    read_165_shift_regs();
    set_595_shift_regs(output_bits.GetValue());
-   unsigned long currentMillis = millis();
-//
-//   //set the state of the feeders based on outputs from 595
-   feeder1.update(currentMillis);
-//   feeder2.update(currentMillis);
-//   //set the state of the rfid module
-//   rfid.update(currentMillis); //rfid will read here
-//
-//
-//
-//   //write outputs from 595
-//   //here we are telling the feeders and controller what to do next frame.
-//   //outputs to
-//   //mulitcolorled
-//
-//
-//   //servo open or closed
-//   if (io_bits.IsSet(1)){
-//     feeder1.set_indicator_light(true);
-//     feeder2.set_indicator_light(false);
-//     feeder1.servo_open();
-//   }
-//   //feeder state led on onff
-//   if( io_bits.IsSet(2)){
-//     feeder1.set_indicator_light(true);
-//     feeder2.set_indicator_light(false);
-//     feeder1.servo_open();
-//   }
-//   if (io_bits.IsSet(3)){
-//     feeder2.set_indicator_light(true);
-//     feeder1.set_indicator_light(false);
-//     feeder2.servo_open();
-//   }
-//   //feeder state led on onff
-//   if( io_bits.IsSet(4)){
-//     feeder2.set_indicator_light(true);
-//     feeder1.set_indicator_light(false);
-//     feeder2.servo_open();
-//   }
 
-if (io_bits.IsSet(VIB_2)){
-  output_bits.Set(LASER);
-}
 
-if (io_bits.IsSet(LASER_2)){
-  output_bits.Clear(LED);
-}
-else{
-  output_bits.Set(LED);
-}
-if(io_bits.IsSet(BUTTON_A)){
-  output_bits.Set(LASER);
-}
-if(io_bits.IsSet(BUTTON_B)){
-  output_bits.Clear(LASER);
-}
-if(io_bits.IsSet(BUTTON_LEFT)){
-  feeder1.set_indicator_light(output_bits);
-}
-else{
-  feeder1.clear_indicator_light(output_bits);
-}
-if(io_bits.IsSet(BUTTON_RIGHT)){
-  output_bits.Set(GREEN);
-}
-else{
-  output_bits.Clear(GREEN);
-}
-if(io_bits.IsSet(BUTTON_DOWN)){
-  output_bits.Set(BLUE);
-}
-else{
-  output_bits.Clear(BLUE);
-}
 
-if(io_bits.IsSet(BUTTON_UP)){
-  output_bits.Set(RED);
-}
-else{
-  output_bits.Clear(RED);
-}
+
+  //  if (rfid.match("input_string")){
+  //
+  //  }
+
+   if(io_bits.IsSet(BUTTON_START)){
+     feeder1.servo_close();
+   }
+   if(io_bits.IsSet(BUTTON_SELECT)){
+     feeder2.servo_close();
+   }
+
+  if(io_bits.IsSet(BUTTON_A)){
+    feeder1.servo_open();
+  }
+  if(io_bits.IsSet(BUTTON_B)){
+    feeder2.servo_open();
+  }
+
+  if(io_bits.IsSet(BUTTON_LEFT)){
+    feeder1.set_indicator_light(output_bits);
+  }
+  else{
+    feeder1.clear_indicator_light(output_bits);
+  }
+  if(io_bits.IsSet(BUTTON_RIGHT)){
+    output_bits.Set(GREEN);
+  }
+  else{
+    output_bits.Clear(GREEN);
+  }
+  if(io_bits.IsSet(BUTTON_DOWN)){
+    output_bits.Set(BLUE);
+  }
+  else{
+    output_bits.Clear(BLUE);
+  }
+
+  if(io_bits.IsSet(BUTTON_UP)){
+    output_bits.Set(RED);
+  }
+  else{
+    output_bits.Clear(RED);
+  }
 
 }
 //
@@ -328,19 +286,13 @@ void loop(){
   if(option_display_uptime){
     display_uptime();
   }
+  currentMillis = millis();
+  // feeder1.update(currentMillis,output_bits,io_bits);
+  // feeder2.update(currentMillis,output_bits,io_bits);
+ //set the state of the rfid module
+  // rfid.update(currentMillis); //rfid will read here
   // printFeedStat(feeder1.number_of_opens(), 0);
   // printFeedStat(feeder2.number_of_opens, 1);
-  /* If there was a chage in state, display which ones changed.
-  */
-  if(io_bits.GetValue() != io_bits_old.GetValue()){
-      Serial.print("*Pin value change detected*\r\n");
-      display_pin_values();
-      io_bits_old.CopyAll(io_bits);
-  }
-
-
-
-
 
 }
 

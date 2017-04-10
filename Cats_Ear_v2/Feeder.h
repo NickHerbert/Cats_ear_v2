@@ -8,13 +8,14 @@
 #include "Arduino.h"
 #include "Sweeper.h"
 #include "Flasher.h"
-#include "Light_sensor.h"
-#include "Vib_sensor.h"
+#include <Servo.h>
 #include "Bitmask.h"
+
 
 class Feeder{
   public:
-    Feeder(int led_pos, long on, long off, int servo_pin, int interval, int oAngle, int cAngle, int duration);
+    Feeder(int led_pos, int servo_pin, unsigned long interval, int oAngle, int cAngle,int pmin,int pmax, int duration, int close_delay,int l_s_pos);
+    void init_servo();
     void servo_open();
     void servo_close();
     void set_indicator_light(Bitmask8 &out_bits);
@@ -24,16 +25,21 @@ class Feeder{
     int get_light_sensor_value();
     int number_of_opens();
     void set_light_sensor_thresh(int threshold);
-    void update(unsigned long currentMillis);
+    void update(unsigned long currentMillis, Bitmask8 &output_bits, Bitmask16 &in_bits);
   private:
     Sweeper servo;               // the servo
-    Light_sensor light;
-    Vib_sensor vib;
 
     int led_position;
     int servo_open_duration;
+    int servo_close_delay;
+    int close_timer;
+    int vib_count_threshold;
+    int vib_count;
     int open_count;
-    int updateInterval;        // interval between updates
+    int light_sensor_pos;
+    bool count_down_timer;
+    bool sensorSeesBeam;
+    unsigned long updateInterval;        // interval between updates
     unsigned long lastUpdate;  // last update of position
 };
 #endif
